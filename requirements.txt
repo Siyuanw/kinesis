@@ -1,0 +1,3 @@
+pymobiledevice3
+python-socketio
+eventlet
