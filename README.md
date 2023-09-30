@@ -10,27 +10,19 @@ Install pip3 dependencies
 pip3 install -r requirements.txt
 ```
 
-Have your device connected, USB connection is required
-
-Run below command and you should get `RSD Address` and `RSD Port`
-
-```shell
-sudo python3 -m pymobiledevice3 remote start-quic-tunnel
-```
-
-Update the `RSD Address` and `RSD Port` in the `main.py`
+Have your device connected, **USB connection is required**
 
 Start project
 
 ```shell
-python3 main.py
+sudo python3 main.py
 ```
 
 Browse [http://localhost:3000](http://localhost:3000)
 
 ## TODO
 
-- [ ] Run with one-click
+- [x] Run with one-command
 - [ ] Electron (?)
 - [ ] Better UI
 - [ ] Randomized location
