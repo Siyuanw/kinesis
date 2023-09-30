@@ -1,3 +1,9 @@
 .idea
 *.iml
 .venv
+node_modules
+build
+out
+dist
+.webpack
+*.spec
