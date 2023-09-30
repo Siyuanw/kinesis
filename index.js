@@ -1,5 +1,10 @@
 const socket = io();
 
+const sendLocation = (latlng) => {
+    console.log(`emit location ${latlng}`);
+    socket.emit('location', latlng);
+}
+
 
 const center = L.latLng(53.338228, -6.259323);
 
@@ -17,30 +22,30 @@ const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
-//L.Routing.control({
-//    waypoints: [
-//        L.latLng(53.271039, -6.205128),
-//        L.latLng(53.271408, -6.203002)
-//    ],
-//    routeWhileDragging: true
-//}).addTo(map);
+// L.Routing.control({
+//     waypoints: [
+//         L.latLng(53.338228, -6.259323),
+//         L.latLng(53.344275, -6.272076)
+//     ],
+//     routeWhileDragging: true
+// }).addTo(map);
 
 
-var marker = null;
-var markerLastPos = null;
-var markerShadowPos = null;
+let marker = null;
+let markerLastPos = null;
+let markerShadowPos = null; // TODO
 
-var path = L.polyline([], {color: 'red'}).addTo(map);
-var stepIndex = 0; // index of next step of path
-var speed = 2; // speed unit meter per second
-var moving = false;
-var pause = false;
+let path = L.polyline([], {color: 'red'}).addTo(map);
+let stepIndex = 1; // index of next step of path
+let speed = 1; // speed unit meter per second
+let loop = 'off'; // off; loop; uturn
+let pause = false;
 
-var tickInterval = 1000;
+let tickInterval = 1000;
 
 
-var tick = setInterval(function() {
-    if (moving && !pause) {
+let tick = setInterval(function() {
+    if (!pause) {
         navigate();
     } else {
         // if not moving, try to refresh location
@@ -49,15 +54,60 @@ var tick = setInterval(function() {
 }, tickInterval);
 
 
+const updateRadio = (name, value) => {
+    document.getElementsByName(name).forEach((element) => {
+        element.checked = element.value == value;
+    });
+}
+
+
+const setSpeed = (v) => {
+    updateRadio('speedChoice', v);
+    speed = v;
+}
+setSpeed(speed);
+
+
+const setLoop = (v) => {
+    updateRadio('loopChoice', v);
+    loop = v;
+}
+setLoop(loop);
+
+
+const setPause = (v) => {
+    document.getElementById('pauseSwitch').checked = v;
+    pause = v;
+}
+setPause(pause);
+
+
+document.getElementById('undoButton').addEventListener('click', deleteStep);
+document.getElementById('stopButton').addEventListener('click', clearSteps);
+
+document.getElementById('pauseSwitch').addEventListener('change', () => {
+    pause = document.getElementById('pauseSwitch').checked;
+    console.log(`pause ${pause}`)
+});
+
+document.getElementsByName('speedChoice').forEach((element) => {
+    element.addEventListener('click', () => {
+        speed = element.value;
+        console.log(`speed ${speed}`)
+    });
+});
+
+document.getElementsByName('loopChoice').forEach((element) => {
+    element.addEventListener('click', () => {
+        loop = element.value;
+        console.log(`loop ${loop}`)
+    });
+});
+
+
 map.on('click', function(e) {
     if (!initMain(e)) {
-        if (!moving) {
-            addStep(e.latlng)
-        }
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(`<p><button onclick="clearSteps()">Clear</button><button onclick="navigate()">Navigate</button></p>`)
-            .openOn(map);
+        addStep(e.latlng)
     }
 });
 
@@ -94,8 +144,7 @@ function teleport(latlng) {
     if (confirm('Teleport?')) {
         marker.setLatLng(latlng);
         markerShadowPos = latlng;
-        console.log(`emit location ${latlng.lat},${latlng.lng}`);
-        socket.emit('location', `${latlng.lat},${latlng.lng}`);
+        sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
         return true;
     }
     return false;
@@ -108,7 +157,7 @@ function move(target, distance) {
         return false;
     }
     const start = markerShadowPos;
-    const newPos = geolib.computeDestinationPoint(markerShadowPos, distance, geolib.getGreatCircleBearing(markerShadowPos, target))
+    const newPos = geolib.computeDestinationPoint(start, distance, geolib.getGreatCircleBearing(start, target))
     const newLatlng = L.latLng(newPos.latitude, newPos.longitude);
 
     // check if it's too far
@@ -122,8 +171,7 @@ function move(target, distance) {
         markerShadowPos = newLatlng;
     }
 
-    console.log(`emit location ${markerShadowPos.lat},${markerShadowPos.lng}`);
-    socket.emit('location', `${markerShadowPos.lat},${markerShadowPos.lng}`);
+    sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
     marker.setLatLng(markerShadowPos);
 }
 
@@ -135,39 +183,56 @@ function addStep(latlng) {
         path.addLatLng(marker.getLatLng());
     }
     path.addLatLng(latlng);
-    map.closePopup();
+}
+
+
+function deleteStep() {
+    const pathLatlngs = path.getLatLngs();
+    // TODO
+    if (pathLatlngs.length > 1 && stepIndex !== pathLatlngs.length - 1) {
+        const deleted = pathLatlngs.pop();
+        console.log(`deleted ${deleted.lat},${deleted.lng}`);
+        path.setLatLngs([...pathLatlngs]);
+    }
 }
 
 
 function clearSteps() {
     console.log(`clear path and stop`);
     path.setLatLngs([]);
-    moving = false;
-    stepIndex = 0;
-    map.closePopup();
+    markerShadowPos = marker.getLatLng(); // start point
+    stepIndex = 1;
 }
 
 
 function navigate() {
-    console.log(`navigate`);
-
-    if (!moving) {
-        map.closePopup();
-        markerShadowPos = marker.getLatLng(); // start point
-        stepIndex = 1; // move towards 1st step
-        moving = true;
-        pause = false;
-    }
-
-    if (moving && !pause) {
+    if (!pause) {
         const pathLatlngs = path.getLatLngs();
-        stepLatlng = pathLatlngs[stepIndex];
-        move(stepLatlng, speed * tickInterval / 1000)
-        // after moved, check if we reached the goal
-        if (stepLatlng.equals(markerShadowPos)) {
-            stepIndex += 1; // proceed with next step
-            if (stepIndex >= pathLatlngs.length) {
-                pause = true; // stop but not clear path
+        if (stepIndex < pathLatlngs.length) {
+            stepLatlng = pathLatlngs[stepIndex];
+            move(stepLatlng, speed * tickInterval / 1000)
+            // after moved, check if we reached the goal
+            if (stepLatlng.equals(markerShadowPos)) {
+                stepIndex += 1; // proceed with next step
+                if (stepIndex >= pathLatlngs.length) {
+                    switch (loop) {
+                        case 'loop':
+                            console.log(`loop: move to start`);
+                            stepIndex = 0;
+                            break;
+                        case 'uturn':
+                            console.log(`loop: make uturn`);
+                            pathLatlngs.reverse();
+                            path.setLatLngs([...pathLatlngs]);
+                            stepIndex = 1;
+                            break;
+                        case 'off':
+                        default:
+                            console.log(`loop: off`);
+                            stepIndex -= 1; // make it valid
+                            break;
+                    }
+                }
             }
         }
     }

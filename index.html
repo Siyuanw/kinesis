@@ -5,18 +5,55 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kinesis</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"/> -->
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="main.css"/>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script> -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
     <script src="https://unpkg.com/socket.io@4.7.2/client-dist/socket.io.min.js"></script>
     <script src="https://unpkg.com/geolib@3.3.4/lib/index.js"></script>
+    <script src="https://unpkg.com/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <div id="map"></div>
+<div class="card" id="control-panel">
+    <div class="card-body">
+
+        <div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
+            <input type="checkbox" class="btn-check" id="pauseSwitch" autocomplete="off">
+            <label class="btn btn-outline-primary" for="pauseSwitch">Pause</label>
+            <button type="button" class="btn btn-outline-primary" id="undoButton">Undo</button>
+            <button type="button" class="btn btn-outline-primary" id="stopButton">Clear</button>
+        </div>
+
+        <div class="btn-group btn-group-sm" role="group">
+            <input type="radio" class="btn-check" name="speedChoice" id="speedChoice1" autocomplete="off" value="1" checked>
+            <label class="btn btn-outline-primary" for="speedChoice1">Walk</label>
+
+            <input type="radio" class="btn-check" name="speedChoice" id="speedChoice2" autocomplete="off" value="6">
+            <label class="btn btn-outline-primary" for="speedChoice2">Ride</label>
+
+            <input type="radio" class="btn-check" name="speedChoice" id="speedChoice3" autocomplete="off" value="20">
+            <label class="btn btn-outline-primary" for="speedChoice3">Drive</label>
+        </div>
+
+        <div class="btn-group btn-group-sm" role="group">
+            <input type="radio" class="btn-check" name="loopChoice" id="loopChoice1" autocomplete="off" value="off" checked>
+            <label class="btn btn-outline-primary" for="loopChoice1">Off</label>
+
+            <input type="radio" class="btn-check" name="loopChoice" id="loopChoice2" autocomplete="off" value="loop">
+            <label class="btn btn-outline-primary" for="loopChoice2">Loop</label>
+
+            <input type="radio" class="btn-check" name="loopChoice" id="loopChoice3" autocomplete="off" value="uturn">
+            <label class="btn btn-outline-primary" for="loopChoice3">U-Turn</label>
+        </div>
+
+    </div>
+</div>
+
 <script src="index.js"></script>
 </body>
 </html>

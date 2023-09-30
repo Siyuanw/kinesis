@@ -7,3 +7,11 @@ html, body {
     height: 100%;
     width: 100%;
 }
+
+#control-panel {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+    bottom: 28px;
+    left: 32px;
+    z-index: 480;
+}
