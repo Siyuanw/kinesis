@@ -23,11 +23,13 @@ Browse [http://localhost:3000](http://localhost:3000)
 ## TODO
 
 - [x] Run with one-command
-- [ ] Electron (?)
 - [ ] Better UI
-- [ ] Randomized location
-- [ ] Adjustable and randomized speed
-- [ ] Closed path
+- [x] Randomized location
+- [x] Adjustable speed -> Choose between 3 speeds
+- [x] Randomized speed
+- [x] Closed path -> Use "loop" mode
+- [x] Persist zoom and center
 - [ ] OSRM Routing (?)
 - [ ] Saved route
-- [ ] Get out of vanilla js before it's too late
+- [ ] ~~Electron~~ (why bother)
+- [ ] ~~Get out of vanilla js before it's too late~~  (why bother)
