@@ -37,6 +37,7 @@ def server(tunnel_host, tunnel_port):
 
     @sio.event
     def disconnect(sid):
+        clients[sid][1].stop()
         clients[sid][0].service.close()
         clients.pop(sid)
 
@@ -59,12 +60,8 @@ async def start_quic_tunnel(service_provider: RemoteServiceDiscoveryService) -> 
             ui = Process(target=server, args=(tunnel_result.address, tunnel_result.port))
             ui.start()
 
-            try:
-                while True:
-                    await asyncio.sleep(.5)
-            except KeyboardInterrupt:
-                ui.terminate()
-
+            while True:
+                await asyncio.sleep(.5)
 
 def create_tunnel():
     devices = get_device_list()
