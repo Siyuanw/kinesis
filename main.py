@@ -9,16 +9,16 @@ import asyncio
 import eventlet
 import socketio
 from multiprocessing import Process
+import os
 
 
 def server(tunnel_host, tunnel_port):
-
     clients = {}
     sio = socketio.Server(cors_allowed_origins='*')
     app = socketio.WSGIApp(sio, static_files={
-        '/': 'index.html',
-        '/index.js': 'index.js',
-        '/main.css': 'main.css',
+        '/': os.path.join(os.path.dirname(__file__), 'index.html'),
+        '/index.js': os.path.join(os.path.dirname(__file__), 'index.js'),
+        '/main.css': os.path.join(os.path.dirname(__file__), 'main.css'),
     })
 
     @sio.event
@@ -62,6 +62,7 @@ async def start_quic_tunnel(service_provider: RemoteServiceDiscoveryService) -> 
 
             while True:
                 await asyncio.sleep(.5)
+
 
 def create_tunnel():
     devices = get_device_list()
