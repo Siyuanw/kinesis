@@ -115,6 +115,27 @@ document.getElementsByName('loopChoice').forEach((element) => {
     });
 });
 
+document.getElementById('coordinates').addEventListener('change', (event) => {
+    const value = event.target.value.trim();
+
+    // Like validation to see if input looks kinda like GPS coordinates
+    const coordinatePattern = /^-?\d+(\.\d+)?,\s?-?\d+(\.\d+)?$/;
+    if (!coordinatePattern.test(value)) {
+        alert("Invalid GPS coordinates, should look like: 53.338228, -6.259323")
+        return;
+    }
+
+    const coords = value.split(',');
+    if(coords.length !== 2) return;
+
+    const lat = parseFloat(coords[0]);
+    const lng = parseFloat(coords[1]);
+    const latlng = {lat, lng};
+
+    if (!initMain({latlng}, true)) {
+        teleport(latlng, true);
+    }
+})
 
 map.on('click', function(e) {
     if (!initMain(e)) {
@@ -140,10 +161,10 @@ const random = (x) => {
 
 
 // return true if initialized marker, false if already initialized
-function initMain(e) {
+function initMain(e, shouldPan = false) {
     if (marker === null) {
         marker = L.marker(e.latlng, {draggable: true});
-        if (teleport(e.latlng)) {
+        if (teleport(e.latlng, shouldPan)) {
             marker.addTo(map);
 
             marker.on('mousedown', function(e) {
@@ -151,7 +172,7 @@ function initMain(e) {
             });
 
             marker.on('mouseup', function(e) {
-                if (!teleport(e.latlng)) {
+                if (!teleport(e.latlng, shouldPan)) {
                     marker.setLatLng(markerLastPos);
                 }
             });
@@ -167,13 +188,17 @@ function initMain(e) {
 
 
 // return true if teleported, false if canceled teleportation
-function teleport(latlng) {
+function teleport(latlng, shouldPan) {
     const choice = confirm('Teleport?')
     if (choice) {
         marker.setLatLng(latlng);
         markerShadowPos = latlng;
         sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
         clearSteps();
+
+        if(shouldPan) {
+            map.panTo(latlng);
+        }
     }
     return choice;
 }

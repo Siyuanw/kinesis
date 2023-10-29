@@ -15,3 +15,18 @@ html, body {
     left: 12px;
     z-index: 480;
 }
+
+#coordinates {
+    font-size: 14px;
+}
+
+::-webkit-input-placeholder {
+    font-size: 14px!important;
+ }
+ 
+ :-moz-placeholder { /* Firefox 18- */
+       font-size: 14px!important;
+ }
+ ::-moz-placeholder {  /* Firefox 19+ */
+       font-size: 14px!important;
+ }
