@@ -115,12 +115,12 @@ document.getElementsByName('loopChoice').forEach((element) => {
     });
 });
 
-document.getElementById('coordinates').addEventListener('change', (event) => {
-    const value = event.target.value.trim();
+const setDirectTeleport = () => {
+    const value = document.getElementById("coordinates").value;
 
     if(value.length <= 1) return;
 
-    // Like validation to see if input looks kinda like GPS coordinates
+    // Light validation to see if input looks kinda like GPS coordinates
     const coordinatePattern = /^-?\d+(\.\d+)?,\s?-?\d+(\.\d+)?$/;
     if (!coordinatePattern.test(value)) {
         alert("Invalid GPS coordinates, should look like: 53.338228, -6.259323")
@@ -137,7 +137,7 @@ document.getElementById('coordinates').addEventListener('change', (event) => {
     if (!initMain({latlng}, true)) {
         teleport(latlng, true);
     }
-})
+}
 
 map.on('click', function(e) {
     if (!initMain(e)) {

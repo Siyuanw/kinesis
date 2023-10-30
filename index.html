@@ -51,12 +51,13 @@
             <label class="btn btn-outline-primary" for="loopChoice3">U-Turn</label>
         </div>
 
-        <div class="input-group mt-2" role="group">
-            <div class="input-group-prepend">
-                <span class="input-group-text" id="coordinates-icon">⌖</span>
-              </div>
-            <input type="text" class="form-control" placeholder="GPS coordinates" id="coordinates">
+        <div class="input-group mt-2">
+            <a class="input-group-text coordinates-icon" href="#" onclick="setDirectTeleport()">
+                ⌖
+            </a>
+            <input type="text" class="form-control" id="coordinates" placeholder="GPS coordinates">
         </div>
+    </div>
 </div>
 
 <script src="index.js"></script>

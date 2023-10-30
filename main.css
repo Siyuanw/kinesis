@@ -16,12 +16,13 @@ html, body {
     z-index: 480;
 }
 
-#coordinates-icon {
+.coordinates-icon {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     border-color: #0d6efd;
-    color: #0d6efd !important;
-    background: transparent;
+    background-color: #0d6efd;
+    color: white !important;
+    text-decoration: none;
 }
 
 #coordinates {
