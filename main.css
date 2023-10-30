@@ -28,7 +28,7 @@ html, body {
 #coordinates {
     font-size: 14px;
     border-color: #0d6efd;
-    border-top-left-radius: 0px;
+    border-top-left-radius: 0;
     background: transparent;
 }
 
