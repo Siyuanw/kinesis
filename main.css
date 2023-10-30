@@ -16,17 +16,31 @@ html, body {
     z-index: 480;
 }
 
+#coordinates-icon {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: #0d6efd;
+    color: #0d6efd !important;
+    background: transparent;
+}
+
 #coordinates {
     font-size: 14px;
+    border-color: #0d6efd;
+    border-top-left-radius: 0px;
+    background: transparent;
 }
 
 ::-webkit-input-placeholder {
     font-size: 14px!important;
+    color: #0d6efd !important;
  }
  
  :-moz-placeholder { /* Firefox 18- */
-       font-size: 14px!important;
+    font-size: 14px!important;
+    color: #0d6efd !important;
  }
  ::-moz-placeholder {  /* Firefox 19+ */
-       font-size: 14px!important;
+    font-size: 14px!important;
+    color: #0d6efd !important;
  }
