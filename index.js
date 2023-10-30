@@ -161,10 +161,10 @@ const random = (x) => {
 
 
 // return true if initialized marker, false if already initialized
-function initMain(e, shouldPan = false) {
+function initMain(e) {
     if (marker === null) {
         marker = L.marker(e.latlng, {draggable: true});
-        if (teleport(e.latlng, shouldPan)) {
+        if (teleport(e.latlng)) {
             marker.addTo(map);
 
             marker.on('mousedown', function(e) {
@@ -172,7 +172,7 @@ function initMain(e, shouldPan = false) {
             });
 
             marker.on('mouseup', function(e) {
-                if (!teleport(e.latlng, shouldPan)) {
+                if (!teleport(e.latlng)) {
                     marker.setLatLng(markerLastPos);
                 }
             });
@@ -188,17 +188,14 @@ function initMain(e, shouldPan = false) {
 
 
 // return true if teleported, false if canceled teleportation
-function teleport(latlng, shouldPan) {
+function teleport(latlng) {
     const choice = confirm('Teleport?')
     if (choice) {
         marker.setLatLng(latlng);
         markerShadowPos = latlng;
         sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
         clearSteps();
-
-        if(shouldPan) {
-            map.panTo(latlng);
-        }
+        map.panTo(latlng);
     }
     return choice;
 }
