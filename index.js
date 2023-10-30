@@ -118,6 +118,8 @@ document.getElementsByName('loopChoice').forEach((element) => {
 document.getElementById('coordinates').addEventListener('change', (event) => {
     const value = event.target.value.trim();
 
+    if(value.length <= 1) return;
+
     // Like validation to see if input looks kinda like GPS coordinates
     const coordinatePattern = /^-?\d+(\.\d+)?,\s?-?\d+(\.\d+)?$/;
     if (!coordinatePattern.test(value)) {
