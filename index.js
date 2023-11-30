@@ -66,6 +66,13 @@ const tick = setInterval(function() {
     navigate();
 }, tickInterval);
 
+document.addEventListener('DOMContentLoaded', function () {
+    const storedHistory = localStorage.getItem('locationHistory');
+    if (storedHistory) {
+        locationHistory.push(...JSON.parse(storedHistory));
+        updateHistoryDropdown();
+    }
+});
 
 const updateHistoryDropdown = () => {
     const historyDropdown = document.getElementById('historyDropdown');
@@ -193,6 +200,7 @@ map.on('click', function(e) {
         locationHistory.pop();
     }
     updateHistoryDropdown();
+    localStorage.setItem('locationHistory', JSON.stringify(locationHistory));
 });
 
 map.on('zoomend', function () {
