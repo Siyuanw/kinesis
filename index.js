@@ -56,6 +56,7 @@ let speed = 1; // speed unit meter per second
 let loop = 'off'; // off; loop; uturn
 let pause = false;
 let teleportEnabled = false;
+const locationHistory = [];
 
 const tickInterval = 1000; // update location per 1000ms
 const randomFactor = 0.2; // +-20% of origin value
@@ -64,6 +65,37 @@ const randomFactor = 0.2; // +-20% of origin value
 const tick = setInterval(function() {
     navigate();
 }, tickInterval);
+
+
+const updateHistoryDropdown = () => {
+    const historyDropdown = document.getElementById('historyDropdown');
+
+    // Clear the existing dropdown items
+    historyDropdown.innerHTML = '';
+
+    // Add the latest 5 clicked locations to the dropdown
+    for (let i = 0; i < Math.min(locationHistory.length, 5); i++) {
+        const location = locationHistory[i];
+        const listItem = document.createElement('button');
+        listItem.classList.add('dropdown-item');
+        listItem.textContent = `Lat: ${location.lat.toFixed(6)}, Lon: ${location.lng.toFixed(6)}`;
+
+        // Add an event listener to handle when a history item is clicked
+        listItem.addEventListener('click', () => {
+            // Update the map and position information with the selected history item
+            if (teleportEnabled) {
+                teleport(location);
+            } else {
+                if (!initMain({ latlng: location })) {
+                    addStep(location);
+                }
+                updatePositionInfo(location);
+            }
+        });
+
+        historyDropdown.appendChild(listItem);
+    }
+};
 
 
 const updateRadio = (name, value) => {
@@ -156,6 +188,11 @@ map.on('click', function(e) {
         }
     }
     updatePositionInfo(e.latlng);
+    locationHistory.unshift(e.latlng);
+    if (locationHistory.length > 5) {
+        locationHistory.pop();
+    }
+    updateHistoryDropdown();
 });
 
 map.on('zoomend', function () {
