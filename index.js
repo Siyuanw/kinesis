@@ -55,6 +55,7 @@ let stepIndex = 0; // index of next step of path
 let speed = 1; // speed unit meter per second
 let loop = 'off'; // off; loop; uturn
 let pause = false;
+let teleportEnabled = false;
 
 const tickInterval = 1000; // update location per 1000ms
 const randomFactor = 0.2; // +-20% of origin value
@@ -101,6 +102,11 @@ document.getElementById('pauseSwitch').addEventListener('change', () => {
     console.log(`pause ${pause}`)
 });
 
+document.getElementById('teleportSwitch').addEventListener('change', () => {
+    teleportEnabled = document.getElementById('teleportSwitch').checked;
+    console.log(`teleportEnabled ${teleportEnabled}`);
+});
+
 document.getElementsByName('speedChoice').forEach((element) => {
     element.addEventListener('click', () => {
         speed = element.value;
@@ -117,8 +123,12 @@ document.getElementsByName('loopChoice').forEach((element) => {
 
 
 map.on('click', function(e) {
-    if (!initMain(e)) {
-        addStep(e.latlng);
+    if (teleportEnabled) {
+        teleport(e.latlng);
+    } else {
+        if (!initMain(e)) {
+            addStep(e.latlng);
+        }
     }
 });
 
@@ -173,7 +183,11 @@ function teleport(latlng) {
         marker.setLatLng(latlng);
         markerShadowPos = latlng;
         sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
-        clearSteps();
+        if (teleportEnabled) {
+            clearSteps(false);
+        } else {
+            clearSteps();
+        }
     }
     return choice;
 }
@@ -220,16 +234,26 @@ function deleteStep() {
         const deleted = pathLatlngs.pop();
         console.log(`deleted ${deleted.lat},${deleted.lng}`);
         path.setLatLngs([...pathLatlngs]);
+        setTeleport(false);
     }
 }
 
 
-function clearSteps() {
+function clearSteps(toggleTeleport=true) {
     if (marker) {
         console.log(`clear path`);
         path.setLatLngs([marker.getLatLng()]);
         stepIndex = 0;
+        if (toggleTeleport) {
+            setTeleport(false);
+        }
     }
+}
+
+
+function setTeleport(value) {
+    document.getElementById('teleportSwitch').checked = value;
+    teleportEnabled = value;
 }
 
 
