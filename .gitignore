@@ -7,4 +7,3 @@ out
 dist
 .webpack
 *.spec
-.vscode/
