@@ -121,6 +121,31 @@ document.getElementsByName('loopChoice').forEach((element) => {
     });
 });
 
+const updatePositionInfo = async (latlng) => {
+    const latlonInfo = document.getElementById('latlon-info');
+    const addressInfo = document.getElementById('address-info');
+
+    latlonInfo.textContent = `Latitude: ${latlng.lat.toFixed(6)}, Longitude: ${latlng.lng.toFixed(6)}`;
+
+    // Use OpenStreetMap Nominatim API for reverse geocoding
+    const apiUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`;
+    
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (response.ok && data.display_name) {
+            const address = data.address;
+            addressInfo.textContent = `Street: ${address.road || ''}, City: ${address.city || ''}, Country: ${address.country || ''}`;
+        } else {
+            // Handle errors or no address found
+            addressInfo.textContent = 'Address information not available';
+        }
+    } catch (error) {
+        console.error('Error fetching address information:', error);
+        addressInfo.textContent = 'Error fetching address information';
+    }
+}
 
 map.on('click', function(e) {
     if (teleportEnabled) {
@@ -130,6 +155,7 @@ map.on('click', function(e) {
             addStep(e.latlng);
         }
     }
+    updatePositionInfo(e.latlng);
 });
 
 map.on('zoomend', function () {
