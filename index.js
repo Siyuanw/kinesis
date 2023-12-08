@@ -30,6 +30,14 @@ const map = L.map('map', {
     doubleClickZoom: false,
 });
 
+const GeoSearchControl = window.GeoSearch.GeoSearchControl;
+const OpenStreetMapProvider = window.GeoSearch.OpenStreetMapProvider;
+const provider = new OpenStreetMapProvider();
+const searchControl = new GeoSearchControl({
+    provider: provider,
+});
+map.addControl(searchControl);
+
 
 const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
