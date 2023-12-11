@@ -1,16 +1,23 @@
-from cryptography.hazmat.primitives.asymmetric import rsa
 from pymobiledevice3.cli.remote import get_device_list
-from pymobiledevice3.remote.core_device_tunnel_service import create_core_device_tunnel_service
+from pymobiledevice3.cli.cli_common import prompt_device_list
+from pymobiledevice3.remote.common import TunnelProtocol
 from pymobiledevice3.remote.remote_service_discovery import RemoteServiceDiscoveryService
+from pymobiledevice3.remote.module_imports import MAX_IDLE_TIMEOUT, start_tunnel, verify_tunnel_imports
 from pymobiledevice3.services.dvt.dvt_secure_socket_proxy import DvtSecureSocketProxyService
 from pymobiledevice3.services.dvt.instruments.location_simulation import LocationSimulation
+from pymobiledevice3.exceptions import NoDeviceConnectedError
 
+import click
 import asyncio
 import eventlet
 import socketio
 from multiprocessing import Process
+from typing import List, TextIO
+import logging
+import sys
 import os
 
+logger = logging.getLogger(__name__)
 
 def server(tunnel_host, tunnel_port):
     clients = {}
@@ -46,38 +53,65 @@ def server(tunnel_host, tunnel_port):
     print('--port', port)
     eventlet.wsgi.server(s, app)
 
+# Reference: https://github.com/doronz88/pymobiledevice3/blob/master/pymobiledevice3/cli/remote.py
+async def tunnel_task(
+        service_provider: RemoteServiceDiscoveryService, secrets: TextIO = None,
+        script_mode: bool = False, max_idle_timeout: float = MAX_IDLE_TIMEOUT,
+        protocol: TunnelProtocol = TunnelProtocol.QUIC) -> None:
+    if start_tunnel is None:
+        raise NotImplementedError('failed to start the QUIC tunnel on your platform')
 
-async def start_quic_tunnel(service_provider: RemoteServiceDiscoveryService) -> None:
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    with create_core_device_tunnel_service(service_provider, autopair=True) as service:
-        async with service.start_quic_tunnel(private_key) as tunnel_result:
-            print('UDID:', service_provider.udid)
-            print('ProductType:', service_provider.product_type)
-            print('ProductVersion:', service_provider.product_version)
-            print('Interface:', tunnel_result.interface)
-            print('--rsd', tunnel_result.address, tunnel_result.port)
+    async with start_tunnel(service_provider, secrets=secrets, max_idle_timeout=max_idle_timeout,
+                            protocol=protocol) as tunnel_result:
+        logger.info('tunnel created')
+        if script_mode:
+            print(f'{tunnel_result.address} {tunnel_result.port}')
+        else:
+            if secrets is not None:
+                print(click.style('Secrets: ', bold=True, fg='magenta') +
+                      click.style(secrets.name, bold=True, fg='white'))
+            print(click.style('UDID: ', bold=True, fg='yellow') +
+                  click.style(service_provider.udid, bold=True, fg='white'))
+            print(click.style('ProductType: ', bold=True, fg='yellow') +
+                  click.style(service_provider.product_type, bold=True, fg='white'))
+            print(click.style('ProductVersion: ', bold=True, fg='yellow') +
+                  click.style(service_provider.product_version, bold=True, fg='white'))
+            print(click.style('Interface: ', bold=True, fg='yellow') +
+                  click.style(tunnel_result.interface, bold=True, fg='white'))
+            print(click.style('Protocol: ', bold=True, fg='yellow') +
+                  click.style(tunnel_result.protocol, bold=True, fg='white'))
+            print(click.style('RSD Address: ', bold=True, fg='yellow') +
+                  click.style(tunnel_result.address, bold=True, fg='white'))
+            print(click.style('RSD Port: ', bold=True, fg='yellow') +
+                  click.style(tunnel_result.port, bold=True, fg='white'))
+            print(click.style('Use the follow connection option:\n', bold=True, fg='yellow') +
+                  click.style(f'--rsd {tunnel_result.address} {tunnel_result.port}', bold=True, fg='cyan'))
+        sys.stdout.flush()
 
-            ui = Process(target=server, args=(tunnel_result.address, tunnel_result.port))
-            ui.start()
+        # Bind socket
+        ui = Process(target=server, args=(tunnel_result.address, tunnel_result.port))
+        ui.start()
 
-            while True:
-                await asyncio.sleep(.5)
-
+        await tunnel_result.client.wait_closed()
+        logger.info('tunnel was closed')
 
 def create_tunnel():
+    """ start quic tunnel """
+    if not verify_tunnel_imports():
+        return
     devices = get_device_list()
+
     if not devices:
         # no devices were found
-        raise Exception('NoDeviceConnectedError')
+        raise NoDeviceConnectedError()
     if len(devices) == 1:
         # only one device found
         rsd = devices[0]
     else:
         # several devices were found
-        raise Exception('TooManyDevicesConnectedError')
+        rsd = prompt_device_list(devices)
 
-    asyncio.run(start_quic_tunnel(rsd))
-
+    asyncio.run(tunnel_task(rsd))
 
 if __name__ == '__main__':
     try:
