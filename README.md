@@ -4,12 +4,19 @@ Built with `pymobiledevice3` and `leaflet`.
 
 ## Requirements
 
-- Python version 3.11.X
+- Python version **3.11.x**
 - iOS Device in [developer mode](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device)
 
 ## Run
 
-Install pip3 dependencies
+It's recommended to use a [virtual environment](https://docs.python.org/3/tutorial/venv.html)
+
+```shell
+python3 -m venv ./.venv
+source ./.venv/bin/activate
+```
+
+Install python dependencies
 
 ```shell
 pip3 install -r requirements.txt
