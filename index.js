@@ -132,6 +132,25 @@ map.on('moveend', function() {
     saveConfig('longitude', c.lng);
 });
 
+const GeoSearchControl = window.GeoSearch.GeoSearchControl;
+const OpenStreetMapProvider = window.GeoSearch.OpenStreetMapProvider;
+const provider = new OpenStreetMapProvider();
+const searchControl = new GeoSearchControl({
+    provider: provider,
+});
+map.addControl(searchControl);
+const searchHandler = (result) => {
+    marker = null;
+    path.setLatLngs([]);
+    stepIndex = 0;
+
+    const event = { latlng: { lat: result.location.y, lng: result.location.x} }
+    if (!initMain(event)) {
+        addStep(event.latlng);
+    }
+}
+map.on('geosearch/showlocation', searchHandler);
+
 
 const random = (x) => {
     const factor = 1 + randomFactor * (Math.random() * 2 - 1);
