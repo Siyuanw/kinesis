@@ -38,6 +38,9 @@
 
             <input type="radio" class="btn-check" name="speedChoice" id="speedChoice3" autocomplete="off" value="20">
             <label class="btn btn-outline-primary" for="speedChoice3">Drive</label>
+
+            <input type="checkbox" class="btn-check" id="teleportSwitch" autocomplete="off">
+            <label class="btn btn-outline-primary" for="teleportSwitch">Teleport</label>
         </div>
 
         <div class="btn-group btn-group-sm" role="group">
@@ -49,6 +52,20 @@
 
             <input type="radio" class="btn-check" name="loopChoice" id="loopChoice3" autocomplete="off" value="uturn">
             <label class="btn btn-outline-primary" for="loopChoice3">U-Turn</label>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                History
+            </button>
+            <div class="dropdown-menu dropdown-menu-end" id="historyDropdown">
+                <!-- History items will be dynamically added here -->
+            </div>
+        </div>
+
+        <div id="position-info" class="position-info">
+            <p id="latlon-info">Latitude: 0, Longitude: 0</p>
+            <p id="address-info">Street: , City: , Country: </p>
         </div>
 
     </div>

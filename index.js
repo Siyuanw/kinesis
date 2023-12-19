@@ -55,6 +55,8 @@ let stepIndex = 0; // index of next step of path
 let speed = 1; // speed unit meter per second
 let loop = 'off'; // off; loop; uturn
 let pause = false;
+let teleportEnabled = false;
+const locationHistory = [];
 
 const tickInterval = 1000; // update location per 1000ms
 const randomFactor = 0.2; // +-20% of origin value
@@ -63,6 +65,44 @@ const randomFactor = 0.2; // +-20% of origin value
 const tick = setInterval(function() {
     navigate();
 }, tickInterval);
+
+document.addEventListener('DOMContentLoaded', function () {
+    const storedHistory = localStorage.getItem('locationHistory');
+    if (storedHistory) {
+        locationHistory.push(...JSON.parse(storedHistory));
+        updateHistoryDropdown();
+    }
+});
+
+const updateHistoryDropdown = () => {
+    const historyDropdown = document.getElementById('historyDropdown');
+
+    // Clear the existing dropdown items
+    historyDropdown.innerHTML = '';
+
+    // Add the latest 5 clicked locations to the dropdown
+    for (let i = 0; i < Math.min(locationHistory.length, 5); i++) {
+        const location = locationHistory[i];
+        const listItem = document.createElement('button');
+        listItem.classList.add('dropdown-item');
+        listItem.textContent = `Lat: ${location.lat.toFixed(6)}, Lon: ${location.lng.toFixed(6)}`;
+
+        // Add an event listener to handle when a history item is clicked
+        listItem.addEventListener('click', () => {
+            // Update the map and position information with the selected history item
+            if (teleportEnabled) {
+                teleport(location);
+            } else {
+                if (!initMain({ latlng: location })) {
+                    addStep(location);
+                }
+                updatePositionInfo(location);
+            }
+        });
+
+        historyDropdown.appendChild(listItem);
+    }
+};
 
 
 const updateRadio = (name, value) => {
@@ -101,6 +141,11 @@ document.getElementById('pauseSwitch').addEventListener('change', () => {
     console.log(`pause ${pause}`)
 });
 
+document.getElementById('teleportSwitch').addEventListener('change', () => {
+    teleportEnabled = document.getElementById('teleportSwitch').checked;
+    console.log(`teleportEnabled ${teleportEnabled}`);
+});
+
 document.getElementsByName('speedChoice').forEach((element) => {
     element.addEventListener('click', () => {
         speed = element.value;
@@ -115,11 +160,47 @@ document.getElementsByName('loopChoice').forEach((element) => {
     });
 });
 
+const updatePositionInfo = async (latlng) => {
+    const latlonInfo = document.getElementById('latlon-info');
+    const addressInfo = document.getElementById('address-info');
+
+    latlonInfo.textContent = `Latitude: ${latlng.lat.toFixed(6)}, Longitude: ${latlng.lng.toFixed(6)}`;
+
+    // Use OpenStreetMap Nominatim API for reverse geocoding
+    const apiUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`;
+    
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (response.ok && data.display_name) {
+            const address = data.address;
+            addressInfo.textContent = `Street: ${address.road || ''}, City: ${address.city || ''}, Country: ${address.country || ''}`;
+        } else {
+            // Handle errors or no address found
+            addressInfo.textContent = 'Address information not available';
+        }
+    } catch (error) {
+        console.error('Error fetching address information:', error);
+        addressInfo.textContent = 'Error fetching address information';
+    }
+}
 
 map.on('click', function(e) {
-    if (!initMain(e)) {
-        addStep(e.latlng);
+    if (teleportEnabled) {
+        teleport(e.latlng);
+    } else {
+        if (!initMain(e)) {
+            addStep(e.latlng);
+        }
     }
+    updatePositionInfo(e.latlng);
+    locationHistory.unshift(e.latlng);
+    if (locationHistory.length > 5) {
+        locationHistory.pop();
+    }
+    updateHistoryDropdown();
+    localStorage.setItem('locationHistory', JSON.stringify(locationHistory));
 });
 
 map.on('zoomend', function () {
@@ -173,7 +254,11 @@ function teleport(latlng) {
         marker.setLatLng(latlng);
         markerShadowPos = latlng;
         sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
-        clearSteps();
+        if (teleportEnabled) {
+            clearSteps(false);
+        } else {
+            clearSteps();
+        }
     }
     return choice;
 }
@@ -220,16 +305,26 @@ function deleteStep() {
         const deleted = pathLatlngs.pop();
         console.log(`deleted ${deleted.lat},${deleted.lng}`);
         path.setLatLngs([...pathLatlngs]);
+        setTeleport(false);
     }
 }
 
 
-function clearSteps() {
+function clearSteps(toggleTeleport=true) {
     if (marker) {
         console.log(`clear path`);
         path.setLatLngs([marker.getLatLng()]);
         stepIndex = 0;
+        if (toggleTeleport) {
+            setTeleport(false);
+        }
     }
+}
+
+
+function setTeleport(value) {
+    document.getElementById('teleportSwitch').checked = value;
+    teleportEnabled = value;
 }
 
 
