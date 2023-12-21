@@ -15,3 +15,33 @@ html, body {
     left: 12px;
     z-index: 480;
 }
+
+.coordinates-icon {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: #0d6efd;
+    background-color: #0d6efd;
+    color: white !important;
+    text-decoration: none;
+}
+
+#coordinates {
+    font-size: 14px;
+    border-color: #0d6efd;
+    border-top-left-radius: 0;
+    background: transparent;
+}
+
+::-webkit-input-placeholder {
+    font-size: 14px!important;
+    color: #0d6efd !important;
+ }
+ 
+ :-moz-placeholder { /* Firefox 18- */
+    font-size: 14px!important;
+    color: #0d6efd !important;
+ }
+ ::-moz-placeholder {  /* Firefox 19+ */
+    font-size: 14px!important;
+    color: #0d6efd !important;
+ }

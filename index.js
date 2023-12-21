@@ -115,6 +115,29 @@ document.getElementsByName('loopChoice').forEach((element) => {
     });
 });
 
+const setDirectTeleport = () => {
+    const value = document.getElementById("coordinates").value;
+
+    if(value.length <= 1) return;
+
+    // Light validation to see if input looks kinda like GPS coordinates
+    const coordinatePattern = /^-?\d+(\.\d+)?,\s?-?\d+(\.\d+)?$/;
+    if (!coordinatePattern.test(value)) {
+        alert("Invalid GPS coordinates, should look like: 53.338228, -6.259323")
+        return;
+    }
+
+    const coords = value.split(',');
+    if(coords.length !== 2) return;
+
+    const lat = parseFloat(coords[0]);
+    const lng = parseFloat(coords[1]);
+    const latlng = {lat, lng};
+
+    if (!initMain({latlng}, true)) {
+        teleport(latlng, true);
+    }
+}
 
 map.on('click', function(e) {
     if (!initMain(e)) {
@@ -174,6 +197,7 @@ function teleport(latlng) {
         markerShadowPos = latlng;
         sendLocation(`${markerShadowPos.lat},${markerShadowPos.lng}`)
         clearSteps();
+        map.panTo(latlng);
     }
     return choice;
 }
