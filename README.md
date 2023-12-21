@@ -1,4 +1,4 @@
-# Kinesis - Location Spoofing for iOS 17
+# Kinesis - Location Spoofing for iOS 17 - [Siyuanw/kinesis](https://github.com/Siyuanw/kinesis)
 
 Built with `pymobiledevice3` and `leaflet`.
 
